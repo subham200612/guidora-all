@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Place Search with Map</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <style>
+    #map { height: 400px; width: 100%; margin-top: 1em; }
+    body { font-family: Arial, sans-serif; margin: 2em; }
+    .search-bar { margin-bottom: 1em; }
+  </style>
+</head>
+<body>
+  <h2>Search Places and View on Map</h2>
+  <div class="search-bar">
+    <input type="text" id="searchInput" placeholder="Enter a place..." size="40">
+    <button onclick="searchPlace()">Search</button>
+  </div>
+  <div id="map"></div>
+  <iframe id="gmap" width="100%" height="300" frameborder="0" style="border:0; margin-top:1em;" allowfullscreen></iframe>
+
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script>
+    // Initialize map
+    var map = L.map('map').setView([20.2961, 85.8245], 10); // Default to Bhubaneswar
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '© OpenStreetMap'
+    }).addTo(map);
+    var marker;
+
+    function searchPlace() {
+      var query = document.getElementById('searchInput').value;
+      if (!query) return;
+      fetch('/api/search?q=' + encodeURIComponent(query))
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+          if (data && data.length > 0) {
+            var place = data[0];
+            var lat = parseFloat(place.lat);
+            var lon = parseFloat(place.lon);
+            if (marker) map.removeLayer(marker);
+            marker = L.marker([lat, lon]).addTo(map).bindPopup(place.display_name).openPopup();
+            map.setView([lat, lon], 13);
+            // Update Google Map iframe
+            var gmap = document.getElementById('gmap');
+            gmap.src = 'https://www.google.com/maps/embed/v1/place?key=AIzaSyDCUh8eJbpjcVjOxfB8t4mdbOsvZviHqok&q=' + encodeURIComponent(place.display_name);
+          } else {
+            alert('No results found.');
+          }
+        })
+        .catch(function() { alert('Error searching for place.'); });
+    }
+  </script>
+</body>
+</html>

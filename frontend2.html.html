@@ -1,0 +1,1990 @@
+                <div id="wallet-container" style="position:absolute;top:10px;right:10px;z-index:200;display:none;align-items:center;gap:8px;background:rgba(255,255,255,0.95);padding:7px 16px 7px 12px;border-radius:22px;box-shadow:0 2px 8px rgba(0,0,0,0.08);font-weight:600;color:#1a2a6c;font-size:1.08em;">
+                    <i class="fas fa-wallet" style="color:#f72585;font-size:1.2em;"></i>
+                    <span id="wallet-points">0</span> pts
+                </div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Leaflet CSS for Map -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-sA+e2H1LG2Q6nL2QbKk1QbZQ1QbZQ1QbZQ1QbZQ1QbZQ=" crossorigin=""/>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guidora - Discover Authentic Local Experiences</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1a2a6c;
+            --secondary: #3a0ca3;
+            --accent: #f72585;
+            --success: #4cc9f0;
+            --warning: #f9c74f;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --gray: #6c757d;
+            --light-gray: #e9ecef;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            line-height: 1.6;
+            color: var(--dark);
+            background-color: #fafafa;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        /* Header Styles */
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 15px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 28px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+        }
+        
+        .logo i {
+            margin-right: 10px;
+            color: var(--warning);
+        }
+        
+        nav ul {
+            display: flex;
+            list-style: none;
+        }
+        
+        nav ul li {
+            margin-left: 20px;
+            position: relative;
+        }
+        
+        nav ul li a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+        }
+        
+        nav ul li a i {
+            margin-right: 5px;
+        }
+        
+        nav ul li a:hover {
+            color: var(--warning);
+        }
+        
+        nav ul li a.active {
+            color: var(--warning);
+        }
+        
+        .auth-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .auth-btn {
+            padding: 8px 15px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+        }
+        
+        .auth-btn i {
+            margin-right: 5px;
+        }
+        
+        .login {
+            background: transparent;
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+        
+        .login:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .signup {
+            background: var(--warning);
+            color: var(--dark);
+            border: 1px solid var(--warning);
+        }
+        
+        .signup:hover {
+            background: #fadb70;
+            transform: translateY(-2px);
+        }
+        
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(rgba(26, 42, 108, 0.9), rgba(58, 12, 163, 0.9)), url('https://images.unsplash.com/photo-1469474968028-56623f02e42e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80');
+            background-size: cover;
+            background-position: center;
+            color: white;
+            padding: 100px 0;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .hero-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .hero h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .hero p {
+            font-size: 1.3rem;
+            margin-bottom: 40px;
+            opacity: 0.9;
+        }
+        
+        .search-box {
+            background: white;
+            border-radius: 50px;
+            padding: 5px;
+            display: flex;
+            max-width: 600px;
+            margin: 0 auto 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        }
+        
+        .search-box input {
+            flex: 1;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 50px;
+            outline: none;
+            font-size: 16px;
+        }
+        
+        .search-box button {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .search-box button:hover {
+            background: #ff4da6;
+        }
+        
+        .hero-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+        
+        .btn {
+            padding: 15px 30px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .btn i {
+            margin-right: 8px;
+        }
+        
+        .btn-primary {
+            background: var(--warning);
+            color: var(--dark);
+            box-shadow: 0 4px 15px rgba(249, 199, 79, 0.3);
+        }
+        
+        .btn-primary:hover {
+            background: #fadb70;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(249, 199, 79, 0.4);
+        }
+        
+        .btn-outline {
+            background: transparent;
+            color: white;
+            border: 2px solid white;
+        }
+        
+        .btn-outline:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-3px);
+        }
+        
+        /* Categories Section */
+        .section-title {
+            text-align: center;
+            margin: 60px 0 30px;
+        }
+        
+        .section-title h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 15px;
+        }
+        
+        .section-title p {
+            color: var(--gray);
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .categories {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+        
+        .category-btn {
+            padding: 10px 20px;
+            background: var(--light);
+            border: 1px solid var(--light-gray);
+            border-radius: 20px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+        }
+        
+        .category-btn i {
+            margin-right: 5px;
+        }
+        
+        .category-btn:hover, .category-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+        
+        /* Experiences Section */
+        .experiences-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+            margin: 40px 0;
+        }
+        
+        .experience-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+        }
+        
+        .experience-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.12);
+        }
+        
+        .card-image {
+            height: 200px;
+            overflow: hidden;
+        }
+        
+        .card-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s;
+        }
+        
+        .experience-card:hover .card-image img {
+            transform: scale(1.05);
+        }
+        
+        .card-content {
+            padding: 20px;
+        }
+        
+        .card-content h3 {
+            font-size: 1.4rem;
+            margin-bottom: 10px;
+            color: var(--primary);
+        }
+        
+        .card-location {
+            color: var(--accent);
+            font-weight: 500;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .card-location i {
+            margin-right: 5px;
+        }
+        
+        .card-description {
+            color: var(--gray);
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+        
+        .card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .card-rating {
+            color: var(--warning);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+        }
+        
+        .card-rating i {
+            margin-right: 3px;
+        }
+        
+        .card-reward {
+            background: linear-gradient(to right, var(--accent), var(--primary));
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+        }
+        
+        .card-reward i {
+            margin-right: 5px;
+        }
+        
+        .view-all {
+            text-align: center;
+            margin: 40px 0;
+        }
+        
+        /* Map Section */
+        .map-section {
+            background: var(--light);
+            padding: 60px 0;
+            margin: 60px 0;
+        }
+        
+        .map-container {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+            height: 700px;
+            min-height: 400px;
+            position: relative;
+        }
+        
+        .map-overlay {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            z-index: 3;
+            display: flex;
+            align-items: center;
+        }
+        
+        .map-overlay h3 {
+            margin: 0;
+            color: var(--primary);
+            font-size: 1.2rem;
+        }
+        
+        .map-placeholder {
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            color: var(--primary);
+        }
+        
+        .map-placeholder i {
+            font-size: 64px;
+            margin-bottom: 15px;
+            color: var(--primary);
+        }
+        
+        /* Footer */
+        footer {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 60px 0 30px;
+        }
+        
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+        
+        .footer-logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 28px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .footer-logo i {
+            margin-right: 10px;
+            color: var(--warning);
+        }
+        
+        .footer-description {
+            opacity: 0.8;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        
+        .footer-heading {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            position: relative;
+            padding-bottom: 10px;
+        }
+        
+        .footer-heading::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 40px;
+            height: 3px;
+            background: var(--warning);
+            border-radius: 3px;
+        }
+        
+        .footer-links {
+            list-style: none;
+        }
+        
+        .footer-links li {
+            margin-bottom: 10px;
+        }
+        
+        .footer-links a {
+            color: white;
+            text-decoration: none;
+            opacity: 0.8;
+            transition: opacity 0.3s;
+            display: flex;
+            align-items: center;
+        }
+        
+        .footer-links a i {
+            margin-right: 8px;
+        }
+        
+        .footer-links a:hover {
+            opacity: 1;
+        }
+        
+        .footer-bottom {
+            text-align: center;
+            padding-top: 30px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            opacity: 0.7;
+            font-size: 0.9rem;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 900px) {
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            nav ul {
+                margin: 20px 0;
+                justify-content: center;
+            }
+            
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+            
+            .hero p {
+                font-size: 1.1rem;
+            }
+            
+            .search-box {
+                flex-direction: column;
+                border-radius: 15px;
+            }
+            
+            .search-box input {
+                border-radius: 15px 15px 0 0;
+            }
+            
+            .search-box button {
+                border-radius: 0 0 15px 15px;
+            }
+            
+            .hero-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+        
+        @media (max-width: 600px) {
+            nav ul {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            nav ul li {
+                margin-left: 0;
+            }
+            
+            .auth-buttons {
+                position: static;
+                justify-content: center;
+            }
+            
+            .hero h1 {
+                font-size: 2rem;
+            }
+            
+            .section-title h2 {
+                font-size: 2rem;
+            }
+            
+            .categories {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .footer-content {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+            
+            .footer-heading::after {
+                left: 50%;
+                transform: translateX(-50%);
+            }
+        }
+    </style>
+</head>
+    <!-- Leaflet JS for Map -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-o9N1j6kG6lL2QbKk1QbZQ1QbZQ1QbZQ1QbZQ1QbZQ1QbZQ=" crossorigin=""></script>
+<body>
+        <!-- OTP Verification Modal -->
+        <div id="otp-modal" style="display:none;position:fixed;z-index:9999;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.4);align-items:center;justify-content:center;">
+            <div style="background:white;padding:32px 28px 24px 28px;border-radius:16px;max-width:400px;width:95vw;box-shadow:0 8px 32px rgba(0,0,0,0.18);position:relative;">
+                <button id="close-otp-modal" style="position:absolute;top:10px;right:14px;background:none;border:none;font-size:1.3em;cursor:pointer;color:#888;">&times;</button>
+                <h2 style="margin-bottom:18px;font-family:'Playfair Display',serif;color:#3a0ca3;font-size:1.3em;text-align:center;">Verify Your Email</h2>
+                <p style="text-align:center;margin-bottom:16px;">Enter the 6-digit OTP sent to your email.</p>
+                <form id="otp-form">
+                    <input type="text" id="otp-input" maxlength="6" placeholder="Enter OTP" required style="width:100%;padding:10px 12px;border-radius:8px;border:1px solid #ccc;font-size:1.1em;text-align:center;letter-spacing:4px;margin-bottom:12px;">
+                    <button type="submit" style="width:100%;padding:10px 0;background:#3a0ca3;color:#fff;font-weight:600;border:none;border-radius:8px;font-size:1.1em;cursor:pointer;">Verify</button>
+                    <div id="otp-error" style="color:#f72585;text-align:center;margin-top:10px;display:none;"></div>
+                    <div id="otp-success" style="color:#28a745;text-align:center;margin-top:10px;display:none;"></div>
+                </form>
+            </div>
+        </div>
+    <!-- Add Hidden Gem button moved to hero section -->
+        <!-- Add Hidden Gem Modal -->
+        <div id="add-gem-modal" style="display:none;position:fixed;z-index:9999;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.4);align-items:center;justify-content:center;">
+            <div style="background:white;padding:32px 28px 24px 28px;border-radius:16px;max-width:400px;width:95vw;box-shadow:0 8px 32px rgba(0,0,0,0.18);position:relative;">
+                <button id="close-add-gem-modal" style="position:absolute;top:10px;right:14px;background:none;border:none;font-size:1.3em;cursor:pointer;color:#888;">&times;</button>
+                <h2 style="margin-bottom:18px;font-family:'Playfair Display',serif;color:#0984e3;font-size:1.3em;text-align:center;">Add Hidden Gem</h2>
+                <form id="add-gem-form" enctype="multipart/form-data">
+                    <div style="margin-bottom:12px;">
+                        <input type="text" id="gem-title" placeholder="Title" required style="width:100%;padding:10px 12px;border-radius:8px;border:1px solid #ccc;font-size:1em;">
+                    </div>
+                    <div style="margin-bottom:12px;">
+                        <select id="gem-category" required style="width:100%;padding:10px 12px;border-radius:8px;border:1px solid #ccc;font-size:1em;">
+                            <option value="">Select Category</option>
+                            <option value="Food & Drink">Food & Drink</option>
+                            <option value="Adventure">Adventure</option>
+                            <option value="Culture & Arts">Culture & Arts</option>
+                            <option value="Nature">Nature</option>
+                        </select>
+                    </div>
+                    <div style="margin-bottom:12px;">
+                        <input type="text" id="gem-location" placeholder="Location (e.g. Old Town District)" required style="width:100%;padding:10px 12px;border-radius:8px;border:1px solid #ccc;font-size:1em;">
+                    </div>
+                    <div style="margin-bottom:12px;">
+                        <textarea id="gem-description" placeholder="Description" required style="width:100%;padding:10px 12px;border-radius:8px;border:1px solid #ccc;font-size:1em;min-height:60px;"></textarea>
+                    </div>
+                    <div style="margin-bottom:12px;">
+                        <input type="text" id="gem-tags" placeholder="Tags (comma separated, e.g. coffee, garden, organic)" style="width:100%;padding:10px 12px;border-radius:8px;border:1px solid #ccc;font-size:1em;">
+                    </div>
+                    <div style="margin-bottom:12px;display:flex;gap:8px;">
+                        <input type="text" id="gem-lat" placeholder="Latitude (optional)" style="flex:0.3;padding:6px 6px;border-radius:8px;border:1px solid #ccc;font-size:0.85em;max-width:70px;">
+                        <input type="text" id="gem-lng" placeholder="Longitude (optional)" style="flex:0.3;padding:6px 6px;border-radius:8px;border:1px solid #ccc;font-size:0.85em;max-width:70px;">
+                        <button type="button" id="map-location-btn" style="flex:1;padding:6px 10px;border-radius:8px;background:#4285F4;color:#fff;border:none;font-size:0.95em;cursor:pointer;">Map Location</button>
+                        <button type="button" id="current-location-btn" style="flex:1;padding:6px 10px;border-radius:8px;background:#00b894;color:#fff;border:none;font-size:0.95em;cursor:pointer;">Use Current Location</button>
+                    </div>
+                    <div style="margin-bottom:18px;">
+                        <input type="file" id="gem-photo" accept="image/*" multiple required style="width:100%;">
+                        <div id="gem-photo-preview-container" style="margin-top:10px;display:none;text-align:center;flex-wrap:wrap;gap:8px;"></div>
+                    </div>
+                    <button type="submit" style="width:100%;padding:10px 0;background:#0984e3;color:#fff;font-weight:600;border:none;border-radius:8px;font-size:1.1em;cursor:pointer;">Submit</button>
+                    <div id="add-gem-error" style="color:#d63031;text-align:center;margin-top:10px;display:none;"></div>
+                </form>
+            </div>
+        </div>
+        <!-- Add Hidden Gem button moved into header below -->
+        <!-- Add Hidden Place Modal -->
+        <div id="add-place-modal" style="display:none;position:fixed;z-index:9999;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.4);align-items:center;justify-content:center;">
+            <div style="background:white;padding:32px 28px 24px 28px;border-radius:16px;max-width:400px;width:95vw;box-shadow:0 8px 32px rgba(0,0,0,0.18);position:relative;">
+                <button id="close-add-place-modal" style="position:absolute;top:10px;right:14px;background:none;border:none;font-size:1.3em;cursor:pointer;color:#888;">&times;</button>
+                <h2 style="margin-bottom:18px;font-family:'Playfair Display',serif;color:#1a2a6c;font-size:1.3em;text-align:center;">Add Hidden Place</h2>
+                <form id="add-place-form" enctype="multipart/form-data">
+                    <div style="margin-bottom:12px;">
+                        <input type="text" id="place-title" placeholder="Title" required style="width:100%;padding:10px 12px;border-radius:8px;border:1px solid #ccc;font-size:1em;">
+                    </div>
+                    <div style="margin-bottom:12px;">
+                        <select id="place-category" required style="width:100%;padding:10px 12px;border-radius:8px;border:1px solid #ccc;font-size:1em;">
+                            <option value="">Select Category</option>
+                            <option value="Food & Drink">Food & Drink</option>
+                            <option value="Adventure">Adventure</option>
+                            <option value="Culture & Arts">Culture & Arts</option>
+                            <option value="Nature">Nature</option>
+                        </select>
+                    </div>
+                    <div style="margin-bottom:12px;">
+                        <input type="text" id="place-location" placeholder="Location (e.g. Old Town District)" required style="width:100%;padding:10px 12px;border-radius:8px;border:1px solid #ccc;font-size:1em;">
+                    </div>
+                    <div style="margin-bottom:12px;">
+                        <textarea id="place-description" placeholder="Description" required style="width:100%;padding:10px 12px;border-radius:8px;border:1px solid #ccc;font-size:1em;min-height:60px;"></textarea>
+                    </div>
+                    <div style="margin-bottom:12px;">
+                        <input type="text" id="place-tags" placeholder="Tags (comma separated, e.g. coffee, garden, organic)" style="width:100%;padding:10px 12px;border-radius:8px;border:1px solid #ccc;font-size:1em;">
+                    </div>
+                    <div style="margin-bottom:12px;display:flex;gap:8px;">
+                        <input type="text" id="place-lat" placeholder="Latitude (optional)" style="flex:0.6;padding:6px 8px;border-radius:8px;border:1px solid #ccc;font-size:0.9em;max-width:110px;">
+                        <input type="text" id="place-lng" placeholder="Longitude (optional)" style="flex:0.6;padding:6px 8px;border-radius:8px;border:1px solid #ccc;font-size:0.9em;max-width:110px;">
+                    </div>
+                    <div style="margin-bottom:18px;">
+                        <input type="file" id="place-photo" accept="image/*" multiple required style="width:100%;">
+                        <div id="place-photo-preview-container" style="margin-top:10px;display:none;text-align:center;flex-wrap:wrap;gap:8px;"></div>
+                    </div>
+                    <button type="submit" style="width:100%;padding:10px 0;background:#3a0ca3;color:#fff;font-weight:600;border:none;border-radius:8px;font-size:1.1em;cursor:pointer;">Submit</button>
+                    <div id="add-place-error" style="color:#f72585;text-align:center;margin-top:10px;display:none;"></div>
+                </form>
+            </div>
+        </div>
+    <!-- Header -->
+    <header>
+            <button id="trip-planner-btn" style="position:relative;top:0;left:0;margin:10px 0 0 260px;background:#fd7e14;color:#fff;border:none;padding:8px 18px;border-radius:20px;font-weight:600;box-shadow:0 2px 8px rgba(0,0,0,0.08);cursor:pointer;">Trip Planner</button>
+            <!-- Trip Planner Modal -->
+            <div id="trip-planner-modal" style="display:none;position:fixed;z-index:9999;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.4);align-items:center;justify-content:center;">
+                <div style="background:white;padding:32px 28px 24px 28px;border-radius:16px;max-width:600px;width:98vw;box-shadow:0 8px 32px rgba(0,0,0,0.18);position:relative;max-height:90vh;overflow-y:auto;">
+                    <button id="close-trip-planner-modal" style="position:absolute;top:10px;right:14px;background:none;border:none;font-size:1.3em;cursor:pointer;color:#888;">&times;</button>
+                    <h2 style="margin-bottom:18px;font-family:'Playfair Display',serif;color:#fd7e14;font-size:1.3em;text-align:center;">Trip Planner</h2>
+                    <button id="trip-filter-btn" style="background:#3a0ca3;color:#fff;border:none;padding:6px 16px;border-radius:16px;font-weight:600;font-size:1em;float:right;margin-bottom:10px;">Filter</button>
+                    <div id="trip-filter-section" style="display:none;margin-bottom:18px;clear:both;">
+                        <input type="text" id="trip-filter-place" placeholder="Place" style="margin-right:8px;padding:6px 10px;border-radius:8px;border:1px solid #ccc;font-size:1em;">
+                        <input type="number" id="trip-filter-price" placeholder="Max Price" style="margin-right:8px;padding:6px 10px;border-radius:8px;border:1px solid #ccc;font-size:1em;width:110px;">
+                        <select id="trip-filter-type" style="margin-right:8px;padding:6px 10px;border-radius:8px;border:1px solid #ccc;font-size:1em;">
+                            <option value="">All Types</option>
+                            <option value="hotel">Hotel</option>
+                            <option value="airplane">Airplane</option>
+                            <option value="cab">Cab</option>
+                            <option value="guide">Human Guide</option>
+                        </select>
+                        <button id="trip-apply-filter-btn" style="background:#00b894;color:#fff;border:none;padding:6px 16px;border-radius:16px;font-weight:600;font-size:1em;">Apply</button>
+                    </div>
+                    <div id="trip-options-list" style="margin-top:10px;"></div>
+                </div>
+            </div>
+            <button id="my-contributions-btn" style="position:relative;top:0;left:0;margin:10px 0 0 130px;background:#3a0ca3;color:#fff;border:none;padding:8px 18px;border-radius:20px;font-weight:600;box-shadow:0 2px 8px rgba(0,0,0,0.08);cursor:pointer;">My Contributions</button>
+            <!-- My Contributions Modal -->
+            <div id="my-contributions-modal" style="display:none;position:fixed;z-index:9999;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.4);align-items:center;justify-content:center;">
+                <div style="background:white;padding:32px 28px 24px 28px;border-radius:16px;max-width:500px;width:95vw;box-shadow:0 8px 32px rgba(0,0,0,0.18);position:relative;max-height:80vh;overflow-y:auto;">
+                    <button id="close-my-contributions-modal" style="position:absolute;top:10px;right:14px;background:none;border:none;font-size:1.3em;cursor:pointer;color:#888;">&times;</button>
+                    <h2 style="margin-bottom:18px;font-family:'Playfair Display',serif;color:#3a0ca3;font-size:1.3em;text-align:center;">My Contributions</h2>
+                    <div id="my-contributions-list" style="margin-top:10px;"></div>
+                </div>
+            </div>
+    <button id="add-gem-btn" style="display:none;position:relative;top:0;left:0;margin:10px 0 0 10px;background:#00b894;color:#fff;border:none;padding:8px 18px;border-radius:20px;font-weight:600;box-shadow:0 2px 8px rgba(0,0,0,0.08);cursor:pointer;">Add Hidden Gem</button>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-map-marked-alt"></i>
+                    <span>Guidora</span>
+                </div>
+                <nav>
+                    <ul>
+                        <li><a href="#" class="active"><i class="fas fa-compass"></i> Discover</a></li>
+                        <li><a href="#"><i class="fas fa-utensils"></i> Food</a></li>
+                        <li><a href="#"><i class="fas fa-mountain"></i> Nature</a></li>
+                        <li><a href="#"><i class="fas fa-landmark"></i> Culture</a></li>
+                        <li><a href="#"><i class="fas fa-hiking"></i> Adventure</a></li>
+                    </ul>
+                </nav>
+                <div class="auth-buttons">
+                    <a href="#" class="auth-btn login" id="login-btn"><i class="fas fa-sign-in-alt"></i> Log In</a>
+                    <a href="#" class="auth-btn signup"><i class="fas fa-user-plus"></i> Sign Up</a>
+                </div>
+            <!-- Login Modal -->
+            <div id="login-modal" style="display:none;position:fixed;z-index:9999;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.4);align-items:center;justify-content:center;">
+                <div style="background:white;padding:32px 28px 24px 28px;border-radius:16px;max-width:350px;width:90vw;box-shadow:0 8px 32px rgba(0,0,0,0.18);position:relative;">
+                    <button id="close-login-modal" style="position:absolute;top:10px;right:14px;background:none;border:none;font-size:1.3em;cursor:pointer;color:#888;">&times;</button>
+                    <h2 style="margin-bottom:18px;font-family:'Playfair Display',serif;color:#1a2a6c;font-size:1.5em;text-align:center;">Log In</h2>
+                    <form id="login-form">
+                        <div style="margin-bottom:14px;">
+                            <input type="text" id="login-name" placeholder="Name (for display only)" style="width:100%;padding:10px 12px;border-radius:8px;border:1px solid #ccc;font-size:1em;">
+                        </div>
+                        <div style="margin-bottom:14px;">
+                            <input type="email" id="login-email" placeholder="Email" required style="width:100%;padding:10px 12px;border-radius:8px;border:1px solid #ccc;font-size:1em;">
+                        </div>
+                        <div style="margin-bottom:18px;">
+                            <input type="password" id="login-password" placeholder="Password" required style="width:100%;padding:10px 12px;border-radius:8px;border:1px solid #ccc;font-size:1em;">
+                        </div>
+                        <button type="submit" style="width:100%;padding:10px 0;background:#f9c74f;color:#212529;font-weight:600;border:none;border-radius:8px;font-size:1.1em;cursor:pointer;">Log In</button>
+                        <div id="login-error" style="color:#f72585;text-align:center;margin-top:10px;display:none;"></div>
+                        <div style="text-align:center;margin-top:8px;">
+                            <a href="#" id="open-otp-from-login" style="color:#3a0ca3;text-decoration:underline;font-size:0.98em;">Verify OTP</a>
+                        </div>
+                    </form>
+                    <div style="text-align:center;margin-top:10px;">
+                        <span>Don't have an account? <a href="#" id="open-signup-link" style="color:#3a0ca3;text-decoration:underline;cursor:pointer;">Sign Up</a></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Signup Modal -->
+            <div id="signup-modal" style="display:none;position:fixed;z-index:9999;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.4);align-items:center;justify-content:center;">
+                <div style="background:white;padding:32px 28px 24px 28px;border-radius:16px;max-width:350px;width:90vw;box-shadow:0 8px 32px rgba(0,0,0,0.18);position:relative;">
+                    <button id="close-signup-modal" style="position:absolute;top:10px;right:14px;background:none;border:none;font-size:1.3em;cursor:pointer;color:#888;">&times;</button>
+                    <h2 style="margin-bottom:18px;font-family:'Playfair Display',serif;color:#1a2a6c;font-size:1.5em;text-align:center;">Sign Up</h2>
+                    <form id="signup-form">
+                        <div style="margin-bottom:14px;">
+                            <input type="text" id="signup-name" placeholder="Name" required style="width:100%;padding:10px 12px;border-radius:8px;border:1px solid #ccc;font-size:1em;">
+                        </div>
+                        <div style="margin-bottom:14px;">
+                            <input type="email" id="signup-email" placeholder="Email" required style="width:100%;padding:10px 12px;border-radius:8px;border:1px solid #ccc;font-size:1em;">
+                        </div>
+                        <div style="margin-bottom:18px;">
+                            <input type="password" id="signup-password" placeholder="Password" required style="width:100%;padding:10px 12px;border-radius:8px;border:1px solid #ccc;font-size:1em;">
+                        </div>
+                        <button type="submit" style="width:100%;padding:10px 0;background:#3a0ca3;color:#fff;font-weight:600;border:none;border-radius:8px;font-size:1.1em;cursor:pointer;">Sign Up</button>
+                        <div id="signup-error" style="color:#f72585;text-align:center;margin-top:10px;display:none;"></div>
+                        <div style="text-align:center;margin-top:8px;">
+                            <a href="#" id="open-otp-from-signup" style="color:#3a0ca3;text-decoration:underline;font-size:0.98em;">Verify OTP</a>
+                        </div>
+                    </form>
+                    <div style="text-align:center;margin-top:10px;">
+                        <span>Already have an account? <a href="#" id="open-login-link" style="color:#1a2a6c;text-decoration:underline;cursor:pointer;">Log In</a></span>
+                    </div>
+                </div>
+            </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container" style="padding-top:70px;padding-bottom:70px;min-height:480px;">
+            <div class="hero-content" style="max-width:700px;margin:auto;">
+                <h1 style="font-size:2.8em;margin-bottom:18px;">Discover Authentic Local Experiences</h1>
+                <p style="font-size:1.25em;margin-bottom:28px;">Uncover hidden gems, connect with local culture, and create unforgettable memories with Guidora's curated travel experiences.</p>
+                <div class="search-box" style="margin-bottom:28px;">
+                    <input type="text" placeholder="Where do you want to explore?" style="padding:12px 16px;font-size:1.1em;border-radius:10px;border:1px solid #ccc;width:70%;max-width:340px;">
+                    <button style="padding:12px 24px;font-size:1.1em;border-radius:10px;background:#4285F4;color:#fff;border:none;margin-left:8px;">Explore</button>
+                </div>
+                <div class="hero-buttons" style="display:flex;flex-wrap:wrap;gap:12px;justify-content:center;">
+                    <a href="#" class="btn btn-primary" style="padding:10px 22px;font-size:1.08em;border-radius:8px;"><i class="fas fa-play"></i> Start Exploring</a>
+                    <a href="#" class="btn btn-outline" style="padding:10px 22px;font-size:1.08em;border-radius:8px;"><i class="fas fa-info-circle"></i> Learn More</a>
+                    <button id="book-uber-btn" class="btn btn-primary" style="background:#000; color:#fff;padding:10px 22px;font-size:1.08em;border-radius:8px;"><i class="fas fa-taxi"></i> Book Uber Cab</button>
+                    <button id="open-experiences-modal" class="btn btn-primary" style="background:#f72585;color:#fff;padding:10px 22px;font-size:1.08em;border-radius:8px;"><i class="fas fa-bolt"></i> Experiences</button>
+                    <button id="open-gemini-chat" class="btn btn-outline" style="border-color:#4285F4;color:#4285F4;padding:10px 22px;font-size:1.08em;border-radius:8px;"><i class="fas fa-robot"></i> Chat with Gemini</button>
+                    <button id="add-gem-btn" style="display:none;background:#00b894;color:#fff;padding:10px 22px;font-size:1.08em;border:none;border-radius:8px;font-weight:600;box-shadow:0 2px 8px rgba(0,0,0,0.08);cursor:pointer;">Add Hidden Gem</button>
+    <!-- Experiences Modal -->
+    <div id="experiences-modal" style="display:none;position:fixed;z-index:99999;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.4);align-items:center;justify-content:center;">
+        <div style="background:white;padding:24px 18px 18px 18px;border-radius:16px;max-width:420px;width:95vw;box-shadow:0 8px 32px rgba(0,0,0,0.18);position:relative;display:flex;flex-direction:column;max-height:90vh;">
+            <button id="close-experiences-modal" style="position:absolute;top:10px;right:14px;background:none;border:none;font-size:1.3em;cursor:pointer;color:#888;">&times;</button>
+            <h2 style="margin-bottom:10px;font-family:'Playfair Display',serif;color:#f72585;font-size:1.2em;text-align:center;">Find Experiences</h2>
+            <div style="margin-bottom:10px;text-align:center;color:#555;font-size:1em;">Explore activities in different places:</div>
+            <ul style="list-style:none;padding:0;margin:0 0 10px 0;">
+                <li style="margin-bottom:8px;"><b>River Rafting</b> - Rishikesh, Colorado, Zanskar</li>
+                <li style="margin-bottom:8px;"><b>Swimming</b> - Goa, Phuket, Miami</li>
+                <li style="margin-bottom:8px;"><b>Dance</b> - Mumbai, Rio de Janeiro, Paris</li>
+                <li style="margin-bottom:8px;"><b>Cultural Fest</b> - Jaipur (Literature Fest), Rio Carnival, Venice Carnival</li>
+                <li style="margin-bottom:8px;"><b>Surfing</b> - Bali, Hawaii, Gold Coast</li>
+                <li style="margin-bottom:8px;"><b>Hiking</b> - Swiss Alps, Nepal, Yosemite</li>
+                <li style="margin-bottom:8px;"><b>Cooking Classes</b> - Tuscany, Bangkok, Oaxaca</li>
+                <li style="margin-bottom:8px;"><b>Wildlife Safari</b> - Kenya, South Africa, Ranthambore</li>
+                <li style="margin-bottom:8px;"><b>Scuba Diving</b> - Maldives, Great Barrier Reef, Andaman</li>
+            </ul>
+            <div style="text-align:center;color:#888;font-size:0.95em;">More activities coming soon!</div>
+        </div>
+    </div>
+    <!-- Gemini Chatbot Modal -->
+    <div id="gemini-chat-modal" style="display:none;position:fixed;z-index:99999;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.4);align-items:center;justify-content:center;">
+        <div style="background:white;padding:24px 18px 18px 18px;border-radius:16px;max-width:400px;width:95vw;box-shadow:0 8px 32px rgba(0,0,0,0.18);position:relative;display:flex;flex-direction:column;max-height:90vh;">
+            <button id="close-gemini-chat" style="position:absolute;top:10px;right:14px;background:none;border:none;font-size:1.3em;cursor:pointer;color:#888;">&times;</button>
+            <h2 style="margin-bottom:10px;font-family:'Playfair Display',serif;color:#4285F4;font-size:1.2em;text-align:center;">Gemini Chatbot</h2>
+            <div id="gemini-chat-history" style="flex:1;overflow-y:auto;background:#f8f9fa;padding:10px 6px 10px 6px;border-radius:8px;margin-bottom:10px;min-height:120px;max-height:260px;"></div>
+            <form id="gemini-chat-form" style="display:flex;gap:6px;">
+                <input type="text" id="gemini-chat-input" placeholder="Type your message..." required style="flex:1;padding:8px 10px;border-radius:8px;border:1px solid #ccc;font-size:1em;">
+                <button type="submit" style="background:#4285F4;color:#fff;border:none;padding:8px 16px;border-radius:8px;font-weight:600;">Send</button>
+            </form>
+            <div id="gemini-chat-error" style="color:#f72585;text-align:center;margin-top:6px;display:none;"></div>
+        </div>
+    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Categories Section -->
+    <section class="container">
+        <div class="section-title">
+            <h2>Explore by Category</h2>
+            <p>Discover 150+ unique experiences around the world</p>
+        </div>
+        
+        <div class="categories">
+            <div class="category-btn active"><i class="fas fa-layer-group"></i> All <span>150</span></div>
+            <div class="category-btn"><i class="fas fa-utensils"></i> Food & Drink <span>42</span></div>
+            <div class="category-btn"><i class="fas fa-hiking"></i> Adventure <span>38</span></div>
+            <div class="category-btn"><i class="fas fa-palette"></i> Culture & Arts <span>45</span></div>
+            <div class="category-btn"><i class="fas fa-mountain"></i> Nature <span>31</span></div>
+        </div>
+    </section>
+    <!-- Experiences Section -->
+    <section class="container">
+        <div class="section-title">
+            <h2>Featured Experiences</h2>
+            <p>Curated hidden gems recommended by our community</p>
+        </div>
+        
+        <div class="experiences-grid" id="experiences-grid">
+            <!-- Experiences will be rendered here by JS -->
+        </div>
+        
+        <div class="view-all">
+        <!-- Air Quality Index Button -->
+        <button id="aqi-btn" style="background:#28a745;color:#fff;padding:10px 22px;border:none;border-radius:22px;font-weight:600;font-size:1.1em;box-shadow:0 2px 8px rgba(0,0,0,0.08);cursor:pointer;margin-top:18px;">Air Quality Index</button>
+        <!-- Air Quality Modal -->
+        <div id="aqi-modal" style="display:none;position:fixed;z-index:9999;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.4);align-items:center;justify-content:center;">
+            <div style="background:white;padding:32px 28px 24px 28px;border-radius:16px;max-width:500px;width:95vw;box-shadow:0 8px 32px rgba(0,0,0,0.18);position:relative;max-height:90vh;overflow-y:auto;">
+                <button id="close-aqi-modal" style="position:absolute;top:10px;right:14px;background:none;border:none;font-size:1.3em;cursor:pointer;color:#888;">&times;</button>
+                <h2 style="margin-bottom:18px;font-family:'Playfair Display',serif;color:#28a745;font-size:1.3em;text-align:center;">Air Quality Index</h2>
+                <div id="aqi-map" style="height:260px;width:100%;margin-bottom:10px;border-radius:8px;"></div>
+                <div class="input-group" style="display:flex;gap:8px;margin-bottom:10px;">
+                    <input type="text" id="aqi-lat" placeholder="Latitude" readonly style="flex:1;padding:8px;border-radius:5px;border:1px solid #ccc;">
+                    <input type="text" id="aqi-lng" placeholder="Longitude" readonly style="flex:1;padding:8px;border-radius:5px;border:1px solid #ccc;">
+                </div>
+                <button id="aqi-fetch-btn" style="background:#28a745;color:#fff;padding:8px 0;border:none;border-radius:5px;font-weight:600;width:100%;margin-bottom:10px;">Get Air Quality</button>
+                <div id="aqi-result"></div>
+            </div>
+        </div>
+    <!-- Leaflet CSS for AQI Map (if not already included) -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
+    <!-- Leaflet JS for AQI Map (if not already included) -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+            <a href="#" class="btn btn-outline" style="color: var(--primary); border-color: var(--primary);">
+                <i class="fas fa-eye"></i> View All Experiences
+            </a>
+        </div>
+    </section>
+
+    <!-- Map Section -->
+    <section class="map-section">
+        <div class="container">
+            <div class="section-title">
+                <h2>Interactive Experience Map</h2>
+                <p>Click markers to explore hidden gems around the world</p>
+            </div>
+            
+            <div class="map-container">
+                <div class="map-overlay">
+                    <h3><i class="fas fa-map-marked-alt"></i> Explore Local Experiences</h3>
+                </div>
+                <div id="geoapify-map" style="width:100%;height:100%;min-height:400px;min-width:200px;display:block;"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Backend API Keys Section -->
+    <section class="container" id="api-keys-section">
+        <div class="section-title">
+            <h2>Backend API Endpoints</h2>
+            <p>These endpoints are available from the backend server:</p>
+        </div>
+        <ul id="api-keys-list" style="font-size:1.1em;line-height:2;"></ul>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-info">
+                    <div class="footer-logo">
+                        <i class="fas fa-map-marked-alt"></i>
+                        <span>Guidora</span>
+                    </div>
+                    <p class="footer-description">
+                        Discover authentic local experiences and connect with cultures around the world.
+                    </p>
+                </div>
+                
+                <div class="footer-links-column">
+                    <h4 class="footer-heading">Explore</h4>
+                    <ul class="footer-links">
+                        <li><a href="#"><i class="fas fa-chevron-right"></i> Destinations</a></li>
+                        <li><a href="#"><i class="fas fa-chevron-right"></i> Experiences</a></li>
+                        <li><a href="#"><i class="fas fa-chevron-right"></i> Local Guides</a></li>
+                        <li><a href="#"><i class="fas fa-chevron-right"></i> Travel Tips</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-links-column">
+                    <h4 class="footer-heading">Community</h4>
+                    <ul class="footer-links">
+                        <li><a href="#"><i class="fas fa-chevron-right"></i> Contribute</a></li>
+                        <li><a href="#"><i class="fas fa-chevron-right"></i> Rewards Program</a></li>
+                        <li><a href="#"><i class="fas fa-chevron-right"></i> Ambassador</a></li>
+                        <li><a href="#"><i class="fas fa-chevron-right"></i> Blog</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-links-column">
+                    <h4 class="footer-heading">Get in Touch</h4>
+                    <ul class="footer-links">
+                        <li><a href="mailto:hello@guidora.com"><i class="fas fa-envelope"></i> hello@guidora.com</a></li>
+                        <li><a href="tel:+15551234567"><i class="fas fa-phone"></i> +1 (555) 123-4567</a></li>
+                        <li><a href="#"><i class="fas fa-map-marker-alt"></i> SUBHAM Bhubaneswar Odisha</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>© 2024 Guidora. All rights reserved. Made with <i class="fas fa-heart" style="color: var(--accent);"></i> for travelers worldwide.</p>
+                <p>Sep 13, 2025, 09:55</p>
+            </div>
+        </div>
+    </footer>
+
+        <!-- Google Maps API -->
+        <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAyExwCGzDjKWy3m5gZfDwiXhcE9g6TtPM"></script>
+        <script>
+        // Experiences Modal Logic
+        document.addEventListener('DOMContentLoaded', function() {
+            const openBtn = document.getElementById('open-experiences-modal');
+            const modal = document.getElementById('experiences-modal');
+            const closeBtn = document.getElementById('close-experiences-modal');
+            if (openBtn && modal && closeBtn) {
+                openBtn.onclick = function() { modal.style.display = 'flex'; };
+                closeBtn.onclick = function() { modal.style.display = 'none'; };
+                window.addEventListener('click', function(e) {
+                    if (e.target === modal) modal.style.display = 'none';
+                });
+            }
+        });
+        // Use Current Location for Add Hidden Gem
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentLocationBtn = document.getElementById('current-location-btn');
+            if (currentLocationBtn) {
+                currentLocationBtn.addEventListener('click', function() {
+                    if (navigator.geolocation) {
+                        currentLocationBtn.textContent = 'Locating...';
+                        navigator.geolocation.getCurrentPosition(function(position) {
+                            document.getElementById('gem-lat').value = position.coords.latitude.toFixed(6);
+                            document.getElementById('gem-lng').value = position.coords.longitude.toFixed(6);
+                            currentLocationBtn.textContent = 'Use Current Location';
+                        }, function(error) {
+                            alert('Unable to retrieve your location.');
+                            currentLocationBtn.textContent = 'Use Current Location';
+                        });
+                    } else {
+                        alert('Geolocation is not supported by your browser.');
+                    }
+                });
+            }
+        });
+        // Map Location Picker for Add Hidden Gem
+        document.addEventListener('DOMContentLoaded', function() {
+            const mapLocationBtn = document.getElementById('map-location-btn');
+            if (mapLocationBtn && window.google && google.maps) {
+                mapLocationBtn.addEventListener('click', function() {
+                    // Show a temporary map modal for picking location
+                    let modal = document.createElement('div');
+                    modal.id = 'map-picker-modal';
+                    modal.style = 'position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:999999;background:rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;';
+                    modal.innerHTML = `<div style='background:white;padding:18px 18px 12px 18px;border-radius:16px;max-width:400px;width:95vw;box-shadow:0 8px 32px rgba(0,0,0,0.18);position:relative;'>
+                        <button id='close-map-picker' style='position:absolute;top:10px;right:14px;background:none;border:none;font-size:1.3em;cursor:pointer;color:#888;'>&times;</button>
+                        <h3 style='margin-bottom:10px;text-align:center;color:#4285F4;'>Pick Location</h3>
+                        <div id='map-picker' style='width:100%;height:300px;border-radius:8px;'></div>
+                        <div id='map-picker-instructions' style='margin-top:8px;text-align:center;font-size:0.95em;color:#555;'>Click on the map to select a location.</div>
+                    </div>`;
+                    document.body.appendChild(modal);
+                    // Initialize Google Map
+                    let map = new google.maps.Map(document.getElementById('map-picker'), {
+                        center: { lat: 20.5937, lng: 78.9629 },
+                        zoom: 4
+                    });
+                    let marker;
+                    map.addListener('click', function(e) {
+                        if (marker) marker.setMap(null);
+                        marker = new google.maps.Marker({
+                            position: e.latLng,
+                            map: map
+                        });
+                        document.getElementById('gem-lat').value = e.latLng.lat().toFixed(6);
+                        document.getElementById('gem-lng').value = e.latLng.lng().toFixed(6);
+                    });
+                    document.getElementById('close-map-picker').onclick = function() {
+                        document.body.removeChild(modal);
+                    };
+                });
+            }
+        });
+        document.addEventListener('DOMContentLoaded', function() {
+            if (document.getElementById('geoapify-map')) {
+                const map = new google.maps.Map(document.getElementById('geoapify-map'), {
+                    center: { lat: 40.8075, lng: -73.9631 },
+                    zoom: 13
+                });
+                new google.maps.Marker({
+                    position: { lat: 40.8075, lng: -73.9631 },
+                    map,
+                    title: '2880 Broadway, New York'
+                });
+            }
+        });
+        // Open OTP modal from login/signup
+        document.addEventListener('DOMContentLoaded', function() {
+        // Gemini API call logic (via backend proxy)
+        async function callGeminiAPI(message) {
+            const response = await fetch('http://localhost:5000/api/gemini-chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message })
+            });
+            if (!response.ok) throw new Error('Gemini API error');
+            const data = await response.json();
+            return data.text || 'No response.';
+        }
+        // Gemini Chatbot UI logic
+        const openGeminiBtn = document.getElementById('open-gemini-chat');
+        const geminiModal = document.getElementById('gemini-chat-modal');
+        const closeGeminiBtn = document.getElementById('close-gemini-chat');
+        const geminiForm = document.getElementById('gemini-chat-form');
+        const geminiInput = document.getElementById('gemini-chat-input');
+        const geminiHistory = document.getElementById('gemini-chat-history');
+        const geminiError = document.getElementById('gemini-chat-error');
+        let geminiChatOpen = false;
+        if (openGeminiBtn && geminiModal && closeGeminiBtn) {
+            openGeminiBtn.addEventListener('click', function() {
+                geminiModal.style.display = 'flex';
+                geminiChatOpen = true;
+                geminiHistory.innerHTML = '';
+                geminiError.style.display = 'none';
+            });
+            closeGeminiBtn.addEventListener('click', function() {
+                geminiModal.style.display = 'none';
+                geminiChatOpen = false;
+                geminiError.style.display = 'none';
+            });
+            geminiModal.addEventListener('click', function(e) {
+                if (e.target === geminiModal) {
+                    geminiModal.style.display = 'none';
+                    geminiChatOpen = false;
+                    geminiError.style.display = 'none';
+                }
+            });
+            if (geminiForm && geminiInput && geminiHistory) {
+                geminiForm.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    geminiError.style.display = 'none';
+                    const userMsg = geminiInput.value.trim();
+                    if (!userMsg) return;
+                    // Show user message
+                    geminiHistory.innerHTML += `<div style='margin-bottom:6px;text-align:right;'><span style='background:#e3f2fd;color:#1565c0;padding:6px 12px;border-radius:12px 12px 2px 12px;display:inline-block;'>${userMsg}</span></div>`;
+                    geminiInput.value = '';
+                    // Show loading
+                    geminiHistory.innerHTML += `<div id='gemini-bot-typing' style='margin-bottom:6px;text-align:left;'><span style='background:#f1f1f1;color:#888;padding:6px 12px;border-radius:12px 12px 12px 2px;display:inline-block;'>Gemini is typing...</span></div>`;
+                    geminiHistory.scrollTop = geminiHistory.scrollHeight;
+                    try {
+                        const botMsg = await callGeminiAPI(userMsg);
+                        document.getElementById('gemini-bot-typing').remove();
+                        geminiHistory.innerHTML += `<div style='margin-bottom:6px;text-align:left;'><span style='background:#f1f1f1;color:#222;padding:6px 12px;border-radius:12px 12px 12px 2px;display:inline-block;'>${botMsg.replace(/\n/g, '<br>')}</span></div>`;
+                        geminiHistory.scrollTop = geminiHistory.scrollHeight;
+                    } catch (err) {
+                        document.getElementById('gemini-bot-typing').remove();
+                        geminiError.textContent = 'Failed to get response from Gemini.';
+                        geminiError.style.display = 'block';
+                    }
+                });
+            }
+        }
+            const openOtpFromLogin = document.getElementById('open-otp-from-login');
+            const openOtpFromSignup = document.getElementById('open-otp-from-signup');
+            if (openOtpFromLogin) {
+                openOtpFromLogin.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const email = document.getElementById('login-email')?.value.trim();
+                    if (email) {
+                        window.showOtpModal(email);
+                    } else {
+                        alert('Please enter your email above first.');
+                    }
+                });
+            }
+            if (openOtpFromSignup) {
+                openOtpFromSignup.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const email = document.getElementById('signup-email')?.value.trim();
+                    if (email) {
+                        window.showOtpModal(email);
+                    } else {
+                        alert('Please enter your email above first.');
+                    }
+                });
+            }
+        });
+        // OTP Verification Modal Logic
+        document.addEventListener('DOMContentLoaded', function() {
+            let otpEmail = '';
+            const otpModal = document.getElementById('otp-modal');
+            const closeOtpModal = document.getElementById('close-otp-modal');
+            const otpForm = document.getElementById('otp-form');
+            const otpInput = document.getElementById('otp-input');
+            const otpError = document.getElementById('otp-error');
+            const otpSuccess = document.getElementById('otp-success');
+            if (closeOtpModal) {
+                closeOtpModal.addEventListener('click', function() {
+                    otpModal.style.display = 'none';
+                    otpError.style.display = 'none';
+                    otpSuccess.style.display = 'none';
+                });
+            }
+            if (otpForm) {
+                otpForm.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    otpError.style.display = 'none';
+                    otpSuccess.style.display = 'none';
+                    const otp = otpInput.value.trim();
+                    if (!otpEmail) {
+                        otpError.textContent = 'No email to verify.';
+                        otpError.style.display = 'block';
+                        return;
+                    }
+                    try {
+                        const res = await fetch('http://localhost:5000/api/verify-otp', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ email: otpEmail, otp })
+                        });
+                        const data = await res.json();
+                        if (!res.ok) {
+                            otpError.textContent = data.error || 'Verification failed.';
+                            otpError.style.display = 'block';
+                            return;
+                        }
+                        otpSuccess.textContent = data.message || 'Email verified! You can now log in.';
+                        otpSuccess.style.display = 'block';
+                        setTimeout(() => {
+                            otpModal.style.display = 'none';
+                            otpSuccess.style.display = 'none';
+                        }, 2000);
+                    } catch (err) {
+                        otpError.textContent = 'Network error.';
+                        otpError.style.display = 'block';
+                    }
+                });
+            }
+            // Expose function to show OTP modal after signup
+            window.showOtpModal = function(email) {
+                otpEmail = email;
+                otpInput.value = '';
+                otpError.style.display = 'none';
+                otpSuccess.style.display = 'none';
+                otpModal.style.display = 'flex';
+            };
+        });
+        // Air Quality Index Modal Logic
+        document.addEventListener('DOMContentLoaded', function() {
+            const aqiBtn = document.getElementById('aqi-btn');
+            const aqiModal = document.getElementById('aqi-modal');
+            const closeAqiModal = document.getElementById('close-aqi-modal');
+            const aqiMapDiv = document.getElementById('aqi-map');
+            const aqiLat = document.getElementById('aqi-lat');
+            const aqiLng = document.getElementById('aqi-lng');
+            const aqiFetchBtn = document.getElementById('aqi-fetch-btn');
+            const aqiResult = document.getElementById('aqi-result');
+            let aqiMap, aqiMarker;
+            if (aqiBtn && aqiModal && closeAqiModal && aqiMapDiv) {
+                aqiBtn.addEventListener('click', function() {
+                    aqiModal.style.display = 'flex';
+                    setTimeout(() => {
+                        if (!aqiMap) {
+                            aqiMap = L.map('aqi-map').setView([28.6139, 77.2090], 5);
+                            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                                attribution: '&copy; OpenStreetMap contributors'
+                            }).addTo(aqiMap);
+                            aqiMarker = L.marker([28.6139, 77.2090], { draggable: true }).addTo(aqiMap);
+                            aqiLat.value = '28.6139';
+                            aqiLng.value = '77.2090';
+                            aqiMarker.on('dragend', function(event) {
+                                const pos = aqiMarker.getLatLng();
+                                aqiLat.value = pos.lat.toFixed(6);
+                                aqiLng.value = pos.lng.toFixed(6);
+                            });
+                            setTimeout(() => { aqiMap.invalidateSize(); }, 500);
+                        } else {
+                            setTimeout(() => { aqiMap.invalidateSize(); }, 200);
+                        }
+                    }, 200);
+                });
+                closeAqiModal.addEventListener('click', function() {
+                    aqiModal.style.display = 'none';
+                });
+                aqiModal.addEventListener('click', function(e) {
+                    if (e.target === aqiModal) aqiModal.style.display = 'none';
+                });
+                aqiFetchBtn.addEventListener('click', async function() {
+                    const lat = aqiLat.value.trim();
+                    const lon = aqiLng.value.trim();
+                    if (!lat || !lon || isNaN(lat) || isNaN(lon)) {
+                        aqiResult.innerHTML = "<p style='color: red;'>Please enter valid numerical values for latitude and longitude.</p>";
+                        return;
+                    }
+                    aqiResult.innerHTML = '<p>Fetching data, please wait...</p>';
+                    try {
+                        const url = `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat}&longitude=${lon}&hourly=pm10,pm2_5,carbon_monoxide,carbon_dioxide,nitrogen_dioxide,sulphur_dioxide,ozone,ammonia,methane`;
+                        const response = await fetch(url);
+                        const data = await response.json();
+                        const pollutants = ['pm10', 'pm2_5', 'carbon_monoxide', 'carbon_dioxide', 'nitrogen_dioxide', 'sulphur_dioxide', 'ozone', 'ammonia', 'methane'];
+                        let airQualityHTML = `<ul style='padding-left:0;'>`;
+                        pollutants.forEach(pollutant => {
+                            airQualityHTML += `<li style='list-style:none;padding:5px;background:#e9ecef;margin:5px 0;border-radius:5px;'><strong>${pollutant.replace('_', ' ').toUpperCase()}:</strong> ${data.hourly[pollutant]?.[0] || 'N/A'}</li>`;
+                        });
+                        airQualityHTML += "</ul>";
+                        aqiResult.innerHTML = airQualityHTML;
+                    } catch (error) {
+                        aqiResult.innerHTML = `<p style='color: red;'>Failed to retrieve data. Please try again.</p>`;
+                    }
+                });
+            }
+        });
+            // Initialize Leaflet Map with Aerial (Satellite) Tiles
+            document.addEventListener('DOMContentLoaded', function() {
+                if (document.getElementById('experience-map')) {
+                    var map = L.map('experience-map').setView([20.5937, 78.9629], 4); // Centered on India
+                    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                        maxZoom: 19,
+                        attribution: 'Tiles © Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+                    }).addTo(map);
+                    // Example marker (Taj Mahal)
+                    L.marker([27.1751, 78.0421]).addTo(map)
+                        .bindPopup('<b>Taj Mahal</b><br>Agra, India').openPopup();
+                }
+            });
+        // Trip Planner modal logic
+        document.addEventListener('DOMContentLoaded', function() {
+            const tripBtn = document.getElementById('trip-planner-btn');
+            const tripModal = document.getElementById('trip-planner-modal');
+            const closeTripModal = document.getElementById('close-trip-planner-modal');
+            const tripFilterBtn = document.getElementById('trip-filter-btn');
+            const tripFilterSection = document.getElementById('trip-filter-section');
+            const tripApplyFilterBtn = document.getElementById('trip-apply-filter-btn');
+            const tripOptionsList = document.getElementById('trip-options-list');
+            let tripOptions = [
+                { id: 1, type: 'hotel', name: 'Grand Palace Hotel', place: 'Paris', price: 120, desc: 'Luxury stay in the heart of Paris.' },
+                { id: 2, type: 'airplane', name: 'Flight to Rome', place: 'Rome', price: 250, desc: 'Direct flight with meals included.' },
+                { id: 3, type: 'cab', name: 'City Cab', place: 'London', price: 30, desc: 'Comfortable cab for city travel.' },
+                { id: 4, type: 'guide', name: 'Local Human Guide', place: 'Delhi', price: 50, desc: 'Personal guide for city exploration.' },
+                { id: 5, type: 'hotel', name: 'Seaside Resort', place: 'Goa', price: 90, desc: 'Beachside resort with pool.' },
+                { id: 6, type: 'cab', name: 'Airport Pickup', place: 'Mumbai', price: 25, desc: 'Cab from airport to hotel.' },
+                { id: 7, type: 'airplane', name: 'Flight to Tokyo', place: 'Tokyo', price: 600, desc: 'Non-stop flight, premium seating.' },
+                { id: 8, type: 'guide', name: 'Mountain Trek Guide', place: 'Manali', price: 80, desc: 'Expert guide for trekking.' }
+            ];
+            function renderTripOptions(options) {
+                if (!options.length) {
+                    tripOptionsList.innerHTML = '<div style="text-align:center;color:#888;">No options found.</div>';
+                    return;
+                }
+                tripOptionsList.innerHTML = options.map(opt => `
+                    <div style="border:1px solid #eee;border-radius:8px;padding:12px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;">
+                        <div>
+                            <div style="font-weight:600;font-size:1.1em;color:#fd7e14;">${opt.name}</div>
+                            <div style="color:#555;font-size:0.95em;">${opt.place} | ${opt.type.charAt(0).toUpperCase() + opt.type.slice(1)}</div>
+                            <div style="color:#888;font-size:0.9em;">${opt.desc}</div>
+                        </div>
+                        <div style="text-align:right;">
+                            <div style="color:#00b894;font-weight:700;font-size:1.1em;">$${opt.price}</div>
+                            <button style="background:#3a0ca3;color:#fff;border:none;padding:6px 14px;border-radius:12px;font-weight:600;margin-top:6px;cursor:pointer;">Book</button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+            if (tripBtn && tripModal && closeTripModal && tripOptionsList) {
+                tripBtn.addEventListener('click', function() {
+                    tripModal.style.display = 'flex';
+                    renderTripOptions(tripOptions);
+                });
+                closeTripModal.addEventListener('click', function() {
+                    tripModal.style.display = 'none';
+                });
+                tripModal.addEventListener('click', function(e) {
+                    if (e.target === tripModal) {
+                        tripModal.style.display = 'none';
+                    }
+                });
+                tripFilterBtn.addEventListener('click', function() {
+                    tripFilterSection.style.display = tripFilterSection.style.display === 'none' ? 'block' : 'none';
+                });
+                tripApplyFilterBtn.addEventListener('click', function() {
+                    const place = document.getElementById('trip-filter-place').value.trim().toLowerCase();
+                    const price = parseFloat(document.getElementById('trip-filter-price').value);
+                    const type = document.getElementById('trip-filter-type').value;
+                    let filtered = tripOptions.filter(opt => {
+                        let match = true;
+                        if (place && !opt.place.toLowerCase().includes(place)) match = false;
+                        if (!isNaN(price) && opt.price > price) match = false;
+                        if (type && opt.type !== type) match = false;
+                        return match;
+                    });
+                    renderTripOptions(filtered);
+                });
+            }
+        });
+        // My Contributions modal logic
+        document.addEventListener('DOMContentLoaded', function() {
+            const contribBtn = document.getElementById('my-contributions-btn');
+            const contribModal = document.getElementById('my-contributions-modal');
+            const closeContribModal = document.getElementById('close-my-contributions-modal');
+            const contribList = document.getElementById('my-contributions-list');
+            if (contribBtn && contribModal && closeContribModal && contribList) {
+                contribBtn.addEventListener('click', async function() {
+                    if (!localStorage.getItem('guidora_token')) {
+                        alert('You must be logged in to view your contributions.');
+                        return;
+                    }
+                    contribModal.style.display = 'flex';
+                    contribList.innerHTML = '<div style="text-align:center;color:#888;">Loading...</div>';
+                    try {
+                        const token = localStorage.getItem('guidora_token');
+                        const res = await fetch('http://localhost:5000/api/experiences', {
+                            headers: { 'Authorization': 'Bearer ' + token }
+                        });
+                        const data = await res.json();
+                        if (!res.ok) throw new Error(data.error || 'Failed to fetch.');
+                        // Filter experiences by current user (assuming backend returns userId or username)
+                        const profileRes = await fetch('http://localhost:5000/api/profile', {
+                            headers: { 'Authorization': 'Bearer ' + token }
+                        });
+                        const profile = await profileRes.json();
+                        let userId = profile && (profile.id || profile._id || profile.userId || profile.username);
+                        let userExperiences = data.filter(exp => exp.userId === userId || exp.username === userId);
+                        if (!userExperiences.length) {
+                            contribList.innerHTML = '<div style="text-align:center;color:#888;">No contributions yet.</div>';
+                        } else {
+                                            contribList.innerHTML = userExperiences.map(exp => `
+                                                <div style="border:1px solid #eee;border-radius:8px;padding:12px 12px 12px 44px;margin-bottom:10px;position:relative;min-height:60px;">
+                                                      <div style="position:absolute;top:10px;left:10px;background:#00b894;color:#fff;font-weight:600;padding:2px 7px 2px 7px;border-radius:50%;font-size:0.78em;min-width:22px;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,0.08);border:2px solid #fff;">${exp.points || 1}★</div>
+                                                    <div style="font-weight:600;font-size:1.1em;color:#1a2a6c;">${exp.title}</div>
+                                                    <div style="color:#555;font-size:0.95em;">${exp.location} | ${exp.category}</div>
+                                                    <div style="color:#888;font-size:0.9em;">${exp.description}</div>
+                                                    <div style="color:#aaa;font-size:0.85em;">${exp.tags}</div>
+                                                </div>
+                                            `).join('');
+                        }
+                    } catch (err) {
+                        contribList.innerHTML = '<div style="text-align:center;color:#f72585;">Failed to load contributions.</div>';
+                    }
+                });
+                closeContribModal.addEventListener('click', function() {
+                    contribModal.style.display = 'none';
+                });
+                contribModal.addEventListener('click', function(e) {
+                    if (e.target === contribModal) {
+                        contribModal.style.display = 'none';
+                    }
+                });
+            }
+        });
+        // Show Add Hidden Gem button if logged in
+        function showAddGemBtnIfLoggedIn() {
+            const btn = document.getElementById('add-gem-btn');
+            if (!btn) return;
+            if (localStorage.getItem('guidora_token')) {
+                btn.style.display = 'block';
+            } else {
+                btn.style.display = 'none';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            showAddGemBtnIfLoggedIn();
+            // Add Hidden Gem modal logic
+            const addBtn = document.getElementById('add-gem-btn');
+            const addModal = document.getElementById('add-gem-modal');
+            const closeAddModal = document.getElementById('close-add-gem-modal');
+            const addForm = document.getElementById('add-gem-form');
+            const addError = document.getElementById('add-gem-error');
+            const photoInput = document.getElementById('gem-photo');
+            const photoPreview = document.getElementById('gem-photo-preview-container');
+            if (addBtn && addModal && closeAddModal && addForm) {
+                addBtn.addEventListener('click', function() {
+                        if (!localStorage.getItem('guidora_token')) {
+                                alert('You must be logged in to add a hidden gem.');
+                                return;
+                        }
+                        addModal.style.display = 'flex';
+                });
+                closeAddModal.addEventListener('click', function() {
+                        addModal.style.display = 'none';
+                        addError.style.display = 'none';
+                });
+                addModal.addEventListener('click', function(e) {
+                        if (e.target === addModal) {
+                                addModal.style.display = 'none';
+                                addError.style.display = 'none';
+                        }
+                });
+                // Image preview
+                if (photoInput && photoPreview) {
+                    photoInput.addEventListener('change', function() {
+                        photoPreview.innerHTML = '';
+                        if (photoInput.files && photoInput.files.length > 0) {
+                            photoPreview.style.display = 'flex';
+                            Array.from(photoInput.files).forEach(file => {
+                                const reader = new FileReader();
+                                reader.onload = function(e) {
+                                    const img = document.createElement('img');
+                                    img.src = e.target.result;
+                                    img.style.maxWidth = '70px';
+                                    img.style.maxHeight = '70px';
+                                    img.style.margin = '4px';
+                                    img.style.borderRadius = '8px';
+                                    photoPreview.appendChild(img);
+                                };
+                                reader.readAsDataURL(file);
+                            });
+                        } else {
+                            photoPreview.style.display = 'none';
+                        }
+                    });
+                }
+                addForm.addEventListener('submit', async function(e) {
+                        e.preventDefault();
+                        addError.style.display = 'none';
+                        const token = localStorage.getItem('guidora_token');
+                        if (!token) { alert('You must be logged in.'); return; }
+                        const formData = new FormData();
+                        formData.append('title', document.getElementById('gem-title').value.trim());
+                        formData.append('category', document.getElementById('gem-category').value);
+                        formData.append('location', document.getElementById('gem-location').value.trim());
+                        formData.append('description', document.getElementById('gem-description').value.trim());
+                        formData.append('tags', document.getElementById('gem-tags').value.trim());
+                        formData.append('lat', document.getElementById('gem-lat').value.trim());
+                        formData.append('lng', document.getElementById('gem-lng').value.trim());
+                        const photos = document.getElementById('gem-photo').files;
+                        if (photos && photos.length > 0) {
+                                Array.from(photos).forEach(photo => formData.append('images', photo));
+                        }
+                        try {
+                                const res = await fetch('http://localhost:5000/api/experiences', {
+                                        method: 'POST',
+                                        headers: { 'Authorization': 'Bearer ' + token },
+                                        body: formData
+                                });
+                                const data = await res.json();
+                                if (!res.ok) {
+                                        addError.textContent = data.error || 'Failed to add gem.';
+                                        addError.style.display = 'block';
+                                        return;
+                                }
+                                addModal.style.display = 'none';
+                                addError.style.display = 'none';
+                                alert('Hidden gem submitted for verification!');
+                                if (typeof loadExperiences === 'function') loadExperiences();
+                        } catch (err) {
+                                addError.textContent = 'Network error.';
+                                addError.style.display = 'block';
+                        }
+                });
+            }
+        });
+        // Show Add Hidden Place button if logged in
+        function showAddPlaceBtnIfLoggedIn() {
+            const btn = document.getElementById('add-place-btn');
+            if (!btn) return;
+            if (localStorage.getItem('guidora_token')) {
+                btn.style.display = 'block';
+            } else {
+                btn.style.display = 'none';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            showAddPlaceBtnIfLoggedIn();
+            // Add Hidden Place modal logic
+            const addBtn = document.getElementById('add-place-btn');
+            const addModal = document.getElementById('add-place-modal');
+            const closeAddModal = document.getElementById('close-add-place-modal');
+            const addForm = document.getElementById('add-place-form');
+            const addError = document.getElementById('add-place-error');
+            const photoInput = document.getElementById('place-photo');
+            const photoPreview = document.getElementById('place-photo-preview-container');
+            if (addBtn && addModal && closeAddModal && addForm) {
+                addBtn.addEventListener('click', function() {
+                        if (!localStorage.getItem('guidora_token')) {
+                                alert('You must be logged in to add a hidden place.');
+                                return;
+                        }
+                        addModal.style.display = 'flex';
+                });
+                closeAddModal.addEventListener('click', function() {
+                        addModal.style.display = 'none';
+                        addError.style.display = 'none';
+                });
+                addModal.addEventListener('click', function(e) {
+                        if (e.target === addModal) {
+                                addModal.style.display = 'none';
+                                addError.style.display = 'none';
+                        }
+                });
+                // Image preview
+                if (photoInput && photoPreview) {
+                    photoInput.addEventListener('change', function() {
+                        photoPreview.innerHTML = '';
+                        if (photoInput.files && photoInput.files.length > 0) {
+                            photoPreview.style.display = 'flex';
+                            Array.from(photoInput.files).forEach(file => {
+                                const reader = new FileReader();
+                                reader.onload = function(e) {
+                                    const img = document.createElement('img');
+                                    img.src = e.target.result;
+                                    img.style.maxWidth = '70px';
+                                    img.style.maxHeight = '70px';
+                                    img.style.margin = '4px';
+                                    img.style.borderRadius = '8px';
+                                    photoPreview.appendChild(img);
+                                };
+                                reader.readAsDataURL(file);
+                            });
+                        } else {
+                            photoPreview.style.display = 'none';
+                        }
+                    });
+                }
+                addForm.addEventListener('submit', async function(e) {
+                        e.preventDefault();
+                        addError.style.display = 'none';
+                        const token = localStorage.getItem('guidora_token');
+                        if (!token) { alert('You must be logged in.'); return; }
+                        const formData = new FormData();
+                        formData.append('title', document.getElementById('place-title').value.trim());
+                        formData.append('category', document.getElementById('place-category').value);
+                        formData.append('location', document.getElementById('place-location').value.trim());
+                        formData.append('description', document.getElementById('place-description').value.trim());
+                        formData.append('tags', document.getElementById('place-tags').value.trim());
+                        formData.append('lat', document.getElementById('place-lat').value.trim());
+                        formData.append('lng', document.getElementById('place-lng').value.trim());
+                        const photos = document.getElementById('place-photo').files;
+                        if (photos && photos.length > 0) {
+                                Array.from(photos).forEach(photo => formData.append('images', photo));
+                        }
+                        try {
+                                const res = await fetch('http://localhost:5000/api/experiences', {
+                                        method: 'POST',
+                                        headers: { 'Authorization': 'Bearer ' + token },
+                                        body: formData
+                                });
+                                const data = await res.json();
+                                if (!res.ok) {
+                                        addError.textContent = data.error || 'Failed to add place.';
+                                        addError.style.display = 'block';
+                                        return;
+                                }
+                                addModal.style.display = 'none';
+                                addError.style.display = 'none';
+                                alert('Place submitted for verification!');
+                                if (typeof loadExperiences === 'function') loadExperiences();
+                        } catch (err) {
+                                addError.textContent = 'Network error.';
+                                addError.style.display = 'block';
+                        }
+                });
+            }
+        });
+        // Add Hidden Place logic
+            function showAddPlaceBtnIfLoggedIn() {
+                const btn = document.getElementById('add-place-btn');
+                if (btn) {
+                    if (localStorage.getItem('guidora_token')) {
+                        btn.style.display = 'block';
+                    } else {
+                        btn.style.display = 'none';
+                    }
+                }
+            }
+        // Reward wallet logic
+        function showWallet(points) {
+            const wallet = document.getElementById('wallet-container');
+            const walletPoints = document.getElementById('wallet-points');
+            if (wallet && walletPoints) {
+                walletPoints.textContent = points;
+                wallet.style.display = 'flex';
+            }
+        }
+        function hideWallet() {
+            const wallet = document.getElementById('wallet-container');
+            if (wallet) wallet.style.display = 'none';
+        }
+        async function fetchAndShowWallet() {
+            const token = localStorage.getItem('guidora_token');
+            if (!token) { hideWallet(); return; }
+            try {
+                const res = await fetch('http://localhost:5000/api/profile', {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                if (!res.ok) { hideWallet(); return; }
+                const data = await res.json();
+                if (data && data.user && typeof data.user.points === 'number') {
+                    showWallet(data.user.points);
+                } else {
+                    hideWallet();
+                }
+            } catch { hideWallet(); }
+        }
+            // Login & Signup modal logic
+            document.addEventListener('DOMContentLoaded', function() {
+                    // Image preview for Add Hidden Place (multiple)
+                    const photoInput = document.getElementById('place-photo');
+                    const previewContainer = document.getElementById('place-photo-preview-container');
+                    if (photoInput && previewContainer) {
+                        photoInput.addEventListener('change', function() {
+                            previewContainer.innerHTML = '';
+                            const files = this.files;
+                            if (files && files.length > 0) {
+                                Array.from(files).forEach(file => {
+                                    const reader = new FileReader();
+                                    reader.onload = function(e) {
+                                        const img = document.createElement('img');
+                                        img.src = e.target.result;
+                                        img.alt = 'Preview';
+                                        img.style.maxWidth = '90px';
+                                        img.style.maxHeight = '90px';
+                                        img.style.borderRadius = '8px';
+                                        img.style.boxShadow = '0 2px 8px rgba(0,0,0,0.08)';
+                                        img.style.margin = '4px';
+                                        previewContainer.appendChild(img);
+                                        previewContainer.style.display = 'flex';
+                                    };
+                                    reader.readAsDataURL(file);
+                                });
+                            } else {
+                                previewContainer.innerHTML = '';
+                                previewContainer.style.display = 'none';
+                            }
+                        });
+                    }
+    fetchAndShowWallet();
+                // Login modal
+                const loginBtn = document.getElementById('login-btn');
+                const loginModal = document.getElementById('login-modal');
+                const closeLoginModal = document.getElementById('close-login-modal');
+                const loginForm = document.getElementById('login-form');
+                const loginError = document.getElementById('login-error');
+                const openSignupLink = document.getElementById('open-signup-link');
+                // Signup modal
+                const signupBtn = document.querySelector('.auth-btn.signup');
+                const signupModal = document.getElementById('signup-modal');
+                const closeSignupModal = document.getElementById('close-signup-modal');
+                const signupForm = document.getElementById('signup-form');
+                const signupError = document.getElementById('signup-error');
+                const openLoginLink = document.getElementById('open-login-link');
+
+                // Show/hide login modal
+                if (loginBtn && loginModal && closeLoginModal && loginForm) {
+                    loginBtn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        loginModal.style.display = 'flex';
+                    });
+                    closeLoginModal.addEventListener('click', function() {
+                        loginModal.style.display = 'none';
+                        loginError.style.display = 'none';
+                    });
+                    loginModal.addEventListener('click', function(e) {
+                        if (e.target === loginModal) {
+                            loginModal.style.display = 'none';
+                            loginError.style.display = 'none';
+                        }
+                    });
+                    if (openSignupLink && signupModal) {
+                        openSignupLink.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            loginModal.style.display = 'none';
+                            signupModal.style.display = 'flex';
+                            loginError.style.display = 'none';
+                        });
+                    }
+                    loginForm.addEventListener('submit', async function(e) {
+                        e.preventDefault();
+                        loginError.style.display = 'none';
+                        const email = document.getElementById('login-email').value.trim();
+                        const password = document.getElementById('login-password').value;
+                        // Name is for display only, not sent to backend
+                        try {
+                            const res = await fetch('http://localhost:5000/api/login', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ email, password })
+                            });
+                            const data = await res.json();
+                            if (!res.ok) {
+                                if (data.error && data.error.toLowerCase().includes('not verified')) {
+                                    loginError.textContent = 'Please verify your email with the OTP sent to you.';
+                                } else if (data.error && data.error.toLowerCase().includes('email')) {
+                                    loginError.textContent = 'Invalid email';
+                                } else {
+                                    loginError.textContent = data.error || 'Login failed';
+                                }
+                                loginError.style.display = 'block';
+                                return;
+                            }
+                            localStorage.setItem('guidora_token', data.token);
+                            loginModal.style.display = 'none';
+                            loginError.style.display = 'none';
+                            alert('Login successful!');
+                            fetchAndShowWallet();
+                        } catch (err) {
+                            loginError.textContent = 'Network error';
+                            loginError.style.display = 'block';
+                        }
+                    });
+                }
+
+                // Show/hide signup modal
+                if (signupBtn && signupModal && closeSignupModal && signupForm) {
+                    signupBtn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        signupModal.style.display = 'flex';
+                    });
+                    closeSignupModal.addEventListener('click', function() {
+                        signupModal.style.display = 'none';
+                        signupError.style.display = 'none';
+                    });
+                    signupModal.addEventListener('click', function(e) {
+                        if (e.target === signupModal) {
+                            signupModal.style.display = 'none';
+                            signupError.style.display = 'none';
+                        }
+                    });
+                    if (openLoginLink && loginModal) {
+                        openLoginLink.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            signupModal.style.display = 'none';
+                            loginModal.style.display = 'flex';
+                            signupError.style.display = 'none';
+                        });
+                    }
+                    signupForm.addEventListener('submit', async function(e) {
+                        e.preventDefault();
+                        signupError.style.display = 'none';
+                        const name = document.getElementById('signup-name').value.trim();
+                        const email = document.getElementById('signup-email').value.trim();
+                        const password = document.getElementById('signup-password').value;
+                        try {
+                            const res = await fetch('http://localhost:5000/api/register', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ name, email, password })
+                            });
+                            const data = await res.json();
+                            if (!res.ok) {
+                                if (data.error && data.error.toLowerCase().includes('email')) {
+                                    signupError.textContent = 'Invalid email';
+                                } else {
+                                    signupError.textContent = data.error || 'Signup failed.';
+                                }
+                                signupError.style.display = 'block';
+                                return;
+                            }
+                            // If OTP required, show OTP modal
+                            if (data.otpRequired && data.user && data.user.email) {
+                                signupModal.style.display = 'none';
+                                window.showOtpModal(data.user.email);
+                                return;
+                            }
+                            localStorage.setItem('guidora_token', data.token);
+                            signupModal.style.display = 'none';
+                            signupError.style.display = 'none';
+                            alert('Signup successful! You are now logged in.');
+                            fetchAndShowWallet();
+                        } catch (err) {
+                            signupError.textContent = 'Network error';
+                            signupError.style.display = 'block';
+                        }
+                    });
+                }
+            });
+    // Helper to create experience card HTML
+    function createExperienceCard(exp) {
+        return `
+        <div class="experience-card">
+            <div class="card-image">
+                <img src="${exp.images && exp.images[0] ? exp.images[0] : ''}" alt="${exp.title}">
+            </div>
+            <div class="card-content">
+                <h3>${exp.title}</h3>
+                <div class="card-location">
+                    <i class="fas fa-map-marker-alt"></i> ${exp.location}
+                </div>
+                <p class="card-description">${exp.description}</p>
+                <div class="card-footer">
+                    <div class="card-rating">
+                        <i class="fas fa-star"></i> ${exp.rating} (${exp.reviewCount})
+                    </div>
+                    <div class="card-reward">
+                        <i class="fas fa-coins"></i> +${exp.rewardPoints} pts
+                    </div>
+                </div>
+            </div>
+        </div>
+        `;
+    }
+
+    // Fetch and render experiences
+    async function loadExperiences(category = 'all', search = '') {
+        const grid = document.getElementById('experiences-grid');
+        grid.innerHTML = '<div style="text-align:center;padding:40px;">Loading...</div>';
+        let url = 'http://localhost:5000/api/experiences?';
+        if (category && category !== 'all') url += `category=${encodeURIComponent(category)}&`;
+        if (search) url += `search=${encodeURIComponent(search)}&`;
+        try {
+            const res = await fetch(url);
+            if (!res.ok) throw new Error('Failed to fetch experiences');
+            const data = await res.json();
+            if (!Array.isArray(data) || data.length === 0) {
+                grid.innerHTML = '<div style="text-align:center;padding:40px;">No experiences found.</div>';
+                return;
+            }
+            grid.innerHTML = data.map(createExperienceCard).join('');
+        } catch (err) {
+            grid.innerHTML = `<div style="color:red;text-align:center;padding:40px;">Error: ${err.message}</div>`;
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Category filter buttons
+        const categoryButtons = document.querySelectorAll('.category-btn');
+        categoryButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                categoryButtons.forEach(btn => btn.classList.remove('active'));
+                this.classList.add('active');
+                let catText = this.textContent.trim();
+                // Remove trailing count if present
+                catText = catText.replace(/\s*\d+$/, '').replace('&', 'and').trim();
+                loadExperiences(catText === 'All' ? 'all' : catText);
+            });
+        });
+        // Search box
+        const searchInput = document.querySelector('.search-box input');
+        const searchBtn = document.querySelector('.search-box button');
+        if (searchBtn && searchInput) {
+            searchBtn.addEventListener('click', function() {
+                const val = searchInput.value.trim();
+                loadExperiences('all', val);
+            });
+            searchInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    loadExperiences('all', searchInput.value.trim());
+                }
+            });
+        }
+        // Book Uber Cab button logic
+        const bookUberBtn = document.getElementById('book-uber-btn');
+        if (bookUberBtn) {
+            bookUberBtn.addEventListener('click', function() {
+                // Replace with your actual Uber booking URL and API key as needed
+                const uberBookingUrl = 'https://m.uber.com/ul/?client_id=YOUR_UBER_API_KEY';
+                window.open(uberBookingUrl, '_blank');
+            });
+        }
+        // Start Exploring button scrolls to experiences
+        const startBtn = document.querySelector('.btn.btn-primary');
+        if (startBtn) {
+            startBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                document.getElementById('experiences-grid').scrollIntoView({ behavior: 'smooth' });
+            });
+        }
+        // Animate elements on scroll
+        const animateOnScroll = function() {
+            const elements = document.querySelectorAll('.experience-card, .section-title');
+            elements.forEach(element => {
+                const position = element.getBoundingClientRect();
+                if (position.top < window.innerHeight - 100) {
+                    element.style.opacity = 1;
+                    element.style.transform = 'translateY(0)';
+                }
+            });
+        };
+        window.addEventListener('scroll', animateOnScroll);
+        // Initial load
+        loadExperiences();
+    });
+    // Remove backend API keys section if present
+    const apiKeysSection = document.getElementById('api-keys-section');
+    if (apiKeysSection) apiKeysSection.remove();
+    </script>
+</body>
+</html>

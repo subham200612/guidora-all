@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Air Quality Checker</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: url('https://publichealth.gwu.edu/sites/g/files/zaxdzs4586/files/2024-03/pollution.png') no-repeat center center fixed;
+            background-size: cover;
+            text-align: center;
+            padding: 20px;
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            position: relative;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.9);
+            max-width: 800px;
+            width: 90%;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: absolute;
+            left: 200px;
+            z-index: 2;
+        }
+        .left {
+            flex: 1;
+            position: relative;
+            z-index: 2;
+        }
+        .right-panel {
+            position: fixed;
+            top: 0;
+            left: 100%;
+            width: 350px;
+            height: 100vh;
+            background: white;
+            box-shadow: -2px 0 10px rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            text-align: left;
+            transition: transform 0.5s ease-in-out;
+            overflow-y: auto;
+            z-index: 1;
+        }
+        .right-panel.active {
+            transform: translateX(-100%);
+            z-index: 3;
+        }
+        .hidden {
+            transform: translateX(100%);
+        }
+        h2 {
+            color: #333;
+        }
+        .input-group {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .input-group input {
+            flex: 1;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 8px;
+        }
+        button {
+            background-color: #28a745;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        #map {
+            height: 300px;
+            width: 100%;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        #result {
+            margin-top: 20px;
+        }
+        .air-quality-item {
+            list-style: none;
+            padding: 5px;
+            background: #e9ecef;
+            margin: 5px 0;
+            border-radius: 5px;
+        }
+        .air-quality-item strong:first-child {
+            color: black;
+            font-weight: bold;
+        }
+        .air-quality-item strong:last-child {
+            color: blue;
+            font-weight: bold;
+        }
+    </style>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        function initMap() {
+            const defaultLocation = [28.6139, 77.2090];
+            const map = L.map('map').setView(defaultLocation, 5);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(map);
+            const marker = L.marker(defaultLocation, { draggable: true }).addTo(map);
+            marker.on('dragstart', function() {
+                document.querySelector(".right-panel").classList.add("hidden");
+            });
+            marker.on('dragend', function(event) {
+                const position = marker.getLatLng();
+                document.getElementById("latitude").value = position.lat.toFixed(6);
+                document.getElementById("longitude").value = position.lng.toFixed(6);
+            });
+            setTimeout(() => {
+                map.invalidateSize();
+            }, 1000);
+        }
+        async function getLocationName(lat, lon) {
+            const url = https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon};
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                return data.display_name || "Unknown Location";
+            } catch (error) {
+                return "Unknown Location";
+            }
+        }
+        async function getAirQuality() {
+            const lat = document.getElementById("latitude").value.trim();
+            const lon = document.getElementById("longitude").value.trim();
+            if (!lat || !lon || isNaN(lat) || isNaN(lon)) {
+                document.getElementById("result").innerHTML = "<p style='color: red;'>Please enter valid numerical values for latitude and longitude.</p>";
+                return;
+            }
+            const locationName = await getLocationName(lat, lon);
+            const url = https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat}&longitude=${lon}&hourly=pm10,pm2_5,carbon_monoxide,carbon_dioxide,nitrogen_dioxide,sulphur_dioxide,ozone,ammonia,methane;
+            document.getElementById("result").innerHTML = "<p>Fetching data, please wait...</p>";
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                const pollutants = ['pm10', 'pm2_5', 'carbon_monoxide', 'carbon_dioxide', 'nitrogen_dioxide', 'sulphur_dioxide', 'ozone', 'ammonia', 'methane'];
+                let airQualityHTML = <h3>${locationName}</h3><ul>;
+                pollutants.forEach(pollutant => {
+                    airQualityHTML += <li class='air-quality-item'><strong>${pollutant.replace('_', ' ').toUpperCase()}:</strong> ${data.hourly[pollutant]?.[0] || 'N/A'}</li>;
+                });
+                airQualityHTML += "</ul>";
+                document.querySelector(".right-panel").classList.remove("hidden");
+                document.querySelector(".right-panel").classList.add("active");
+                document.getElementById("result").innerHTML = airQualityHTML;
+            } catch (error) {
+                document.getElementById("result").innerHTML = <p style='color: red;'>Failed to retrieve data: ${error.message}. Please try again.</p>;
+            }
+        }
+    </script>
+</head>
+<body onload="initMap()">
+    <div class="container">
+<h1> <font color=BLUE>AIR QUALITY ANALYZER</font></h1>
+
+        <div class="left">
+            <h2>Check Air Quality</h2>
+            <div id="map"></div>
+            <div class="input-group">
+                <input type="text" id="latitude" placeholder="Latitude" readonly>
+                <input type="text" id="longitude" placeholder="Longitude" readonly>
+            </div>
+            <button onclick="getAirQuality()">Get Air Quality</button>
+        </div>
+    </div>
+    <div class="right-panel hidden" id="result"></div>
+</body>
+</html>

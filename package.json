@@ -1,0 +1,12 @@
+{
+  "dependencies": {
+    "axios": "^1.12.1",
+    "bcryptjs": "^3.0.2",
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "multer": "^2.0.2",
+    "node-fetch": "^2.7.0",
+    "uuid": "^13.0.0"
+  }
+}

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>MongoDB Website</title>
+</head>
+<body>
+  <h2>Users</h2>
+  <form id="userForm">
+    <input type="text" id="name" placeholder="Name" required>
+    <input type="email" id="email" placeholder="Email" required>
+    <button type="submit">Add User</button>
+  </form>
+
+  <ul id="userList"></ul>
+
+  <script>
+    const API = "http://localhost:5000";
+
+    // Add user
+    document.getElementById("userForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const name = document.getElementById("name").value;
+      const email = document.getElementById("email").value;
+
+      await fetch(${API}/users, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email })
+      });
+
+      loadUsers();
+    });
+
+    // Load users
+    async function loadUsers() {
+      const res = await fetch(${API}/users);
+      const users = await res.json();
+      document.getElementById("userList").innerHTML = 
+        users.map(u => <li>${u.name} - ${u.email}</li>).join("");
+    }
+
+    loadUsers();
+  </script>
+</body>
+</html>

@@ -1,0 +1,14 @@
+/* Main styles for Guidora frontend */
+body {
+  font-family: Arial, sans-serif;
+
+  margin: 0;
+  padding: 0;
+  background: #f8f9fa;
+}
+h1 {
+  color: #0984e3;
+  text-align: center;
+  margin-top: 40px;
+}
+/* Add more styles as needed */
