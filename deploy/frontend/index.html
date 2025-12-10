@@ -621,28 +621,37 @@ async function loadExperiences() {
       grid.innerHTML = '<div style="text-align:center;padding:40px;">No experiences found.</div>';
       return;
     }
-    grid.innerHTML = experiences.map(exp => `
-      <div class="experience-card">
-        <div class="card-image">
-          <img src="${exp.images && exp.images[0] ? exp.images[0] : ''}" alt="${exp.title}">
-        </div>
-        <div class="card-content">
-          <h3>${exp.title}</h3>
-          <div class="card-location">
-            <i class="fas fa-map-marker-alt"></i> ${exp.location}
-          </div>
-          <p class="card-description">${exp.description}</p>
-          <div class="card-footer">
-            <div class="card-rating">
-              <i class="fas fa-star"></i> ${exp.rating || 0} (${exp.reviewCount || 0})
-            </div>
-            <div class="card-reward">
-              <i class="fas fa-coins"></i> +${exp.rewardPoints || 0} pts
-            </div>
-          </div>
-        </div>
-      </div>
-    `).join('');
+            grid.innerHTML = experiences.map(exp => {
+                // Normalize image URL: support full URLs, absolute paths, or stored filenames
+                let imgSrc = '';
+                if (exp.images && exp.images[0]) {
+                    const raw = exp.images[0];
+                    if (/^https?:\/\//i.test(raw)) imgSrc = raw;
+                    else if (raw.startsWith('/')) imgSrc = API_BASE_URL.replace(/\/api\/?$/,'') + raw;
+                    else imgSrc = API_BASE_URL.replace(/\/api\/?$/,'') + '/uploads/' + raw;
+                }
+                return `
+                <div class="experience-card">
+                    <div class="card-image">
+                        <img src="${imgSrc}" alt="${exp.title}">
+                    </div>
+                    <div class="card-content">
+                        <h3>${exp.title}</h3>
+                        <div class="card-location">
+                            <i class="fas fa-map-marker-alt"></i> ${exp.location}
+                        </div>
+                        <p class="card-description">${exp.description}</p>
+                        <div class="card-footer">
+                            <div class="card-rating">
+                                <i class="fas fa-star"></i> ${exp.rating || 0} (${exp.reviewCount || 0})
+                            </div>
+                            <div class="card-reward">
+                                <i class="fas fa-coins"></i> +${exp.rewardPoints || 0} pts
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+            }).join('');
   } catch (err) {
     const grid = document.getElementById('experiences-grid');
     if (grid) grid.innerHTML = `<div style="color:red;text-align:center;padding:40px;">Error: ${err.message}</div>`;

@@ -138,7 +138,8 @@ const authenticateToken = (req, res, next) => {
 
   jwt.verify(token, JWT_SECRET, (err, user) => {
     if (err) {
-      return res.status(403).json({ error: 'Invalid or expired token' });
+      if (err.name === 'TokenExpiredError') return res.status(401).json({ error: 'Token expired' });
+      return res.status(401).json({ error: 'Invalid token' });
     }
     req.user = user;
     next();
@@ -545,34 +546,6 @@ app.post('/api/register', async (req, res) => {
       user: { ...user, password: undefined, otp: undefined, otpExpires: undefined },
       otpRequired: true
     });
-// OTP verification endpoint
-app.post('/api/verify-otp', async (req, res) => {
-  try {
-    const { email, otp } = req.body;
-    if (!email || !otp) {
-      return res.status(400).json({ error: 'Email and OTP are required' });
-    }
-    if (!db) return res.status(500).json({ error: 'Database not connected' });
-    const user = await db.collection('users').findOne({ email });
-    if (!user) {
-      return res.status(400).json({ error: 'User not found' });
-    }
-    if (user.verified) {
-      return res.status(400).json({ error: 'User already verified' });
-    }
-    if (user.otp !== otp) {
-      return res.status(400).json({ error: 'Invalid OTP' });
-    }
-    if (Date.now() > user.otpExpires) {
-      return res.status(400).json({ error: 'OTP expired' });
-    }
-    await db.collection('users').updateOne({ email }, { $set: { verified: true }, $unset: { otp: '', otpExpires: '' } });
-    res.json({ message: 'Email verified! You can now log in.' });
-  } catch (error) {
-    console.error('OTP verification error:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
   } catch (error) {
     console.error('Registration error:', error);
     res.status(500).json({ error: 'Internal server error' });
@@ -602,7 +575,7 @@ app.post('/api/login', async (req, res) => {
     if (!user) {
       return res.status(400).json({ error: 'Invalid email or password' });
     }
-
+    
     // Check if verified
     if (!user.verified) {
       return res.status(400).json({ error: 'Email not verified. Please check your email for the OTP.' });

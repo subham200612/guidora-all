@@ -1,4 +1,4 @@
-                <div id="wallet-container" style="position:absolute;top:10px;right:10px;z-index:200;display:none;align-items:center;gap:8px;background:rgba(255,255,255,0.95);padding:7px 16px 7px 12px;border-radius:22px;box-shadow:0 2px 8px rgba(0,0,0,0.08);font-weight:600;color:#1a2a6c;font-size:1.08em;">
+ <div id="wallet-container" style="position:absolute;top:10px;right:10px;z-index:200;display:none;align-items:center;gap:8px;background:rgba(255,255,255,0.95);padding:7px 16px 7px 12px;border-radius:22px;box-shadow:0 2px 8px rgba(0,0,0,0.08);font-weight:600;color:#1a2a6c;font-size:1.08em;">
                     <i class="fas fa-wallet" style="color:#f72585;font-size:1.2em;"></i>
                     <span id="wallet-points">0</span> pts
                 </div>
@@ -1235,8 +1235,14 @@
                             otpError.style.display = 'block';
                             return;
                         }
-                        otpSuccess.textContent = data.message || 'Email verified! You can now log in.';
+                        otpSuccess.textContent = data.message || 'Email verified! You are now logged in.';
                         otpSuccess.style.display = 'block';
+                        // If backend returned a token on verification, store it and update UI
+                        if (data.token) {
+                            localStorage.setItem('guidora_token', data.token);
+                            if (typeof fetchAndShowWallet === 'function') fetchAndShowWallet();
+                            if (typeof showAddGemBtnIfLoggedIn === 'function') showAddGemBtnIfLoggedIn();
+                        }
                         setTimeout(() => {
                             otpModal.style.display = 'none';
                             otpSuccess.style.display = 'none';
@@ -1790,12 +1796,12 @@
                             });
                             const data = await res.json();
                             if (!res.ok) {
-                                if (data.error && data.error.toLowerCase().includes('not verified')) {
+                                // Prefer backend message (clearer), but keep the OTP-friendly text
+                                const backendMsg = data && data.error ? data.error : null;
+                                if (backendMsg && backendMsg.toLowerCase().includes('not verified')) {
                                     loginError.textContent = 'Please verify your email with the OTP sent to you.';
-                                } else if (data.error && data.error.toLowerCase().includes('email')) {
-                                    loginError.textContent = 'Invalid email';
                                 } else {
-                                    loginError.textContent = data.error || 'Login failed';
+                                    loginError.textContent = backendMsg || 'Login failed';
                                 }
                                 loginError.style.display = 'block';
                                 return;
